@@ -1,1 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feeling Lucky: Guess the Number!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* Rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            padding: 2.5rem; /* Ample padding */
+            max-width: 500px; /* Max width for larger screens */
+            width: 100%; /* Full width on smaller screens */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between elements */
+        }
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Chrome, Safari, Edge */
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="selection:bg-blue-200 selection:text-blue-800">
+    <div class="game-container">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-2">
+            Feeling Lucky?
+        </h1>
+        <p class="text-lg text-gray-700">
+            I'm thinking of a number between 1 and 100. Can you guess it?
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+            <input
+                type="number"
+                id="guessInput"
+                min="1"
+                max="100"
+                placeholder="Enter your guess"
+                class="w-full sm:w-auto flex-grow px-5 py-3 text-xl border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-300 ease-in-out text-gray-800 placeholder-gray-400"
+            />
+            <button
+                id="guessButton"
+                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            >
+                Guess!
+            </button>
+        </div>
+
+        <p id="message" class="text-xl font-semibold text-gray-800 mt-4 h-8"></p>
+        <p id="attempts" class="text-md text-gray-600 mt-2">Attempts: 0</p>
+
+        <button
+            id="resetButton"
+            class="mt-6 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-200"
+        >
+            Play Again
+        </button>
+    </div>
+
+    <script>
+        // Get references to HTML elements
+        const guessInput = document.getElementById('guessInput');
+        const guessButton = document.getElementById('guessButton');
+        const messageDisplay = document.getElementById('message');
+        const attemptsDisplay = document.getElementById('attempts');
+        const resetButton = document.getElementById('resetButton');
+
+        let secretNumber; // The number the user needs to guess
+        let attempts;     // Counter for the number of guesses
+
+        /**
+         * Initializes or resets the game state.
+         * Generates a new secret number, resets attempts, and clears messages.
+         */
+        function initializeGame() {
+            // Generate a random integer between 1 and 100 (inclusive)
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0; // Reset attempts counter
+            messageDisplay.textContent = ''; // Clear any previous messages
+            attemptsDisplay.textContent = 'Attempts: 0'; // Reset attempts display
+            guessInput.value = ''; // Clear the input field
+            guessInput.disabled = false; // Enable the input field
+            guessButton.disabled = false; // Enable the guess button
+            guessInput.focus(); // Set focus to the input field for immediate typing
+        }
+
+        /**
+         * Displays a message to the user in the message area.
+         * @param {string} msg - The message to display.
+         * @param {string} colorClass - Tailwind CSS class for text color (e.g., 'text-red-600', 'text-green-600').
+         */
+        function showMessage(msg, colorClass = 'text-gray-800') {
+            messageDisplay.textContent = msg;
+            // Remove previous color classes and add the new one
+            messageDisplay.className = `text-xl font-semibold mt-4 h-8 ${colorClass}`;
+        }
+
+        /**
+         * Handles the user's guess when the "Guess!" button is clicked.
+         */
+        function handleGuess() {
+            const userGuess = parseInt(guessInput.value); // Get the user's input as an integer
+
+            // Validate the input
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                showMessage('Please enter a valid number between 1 and 100.', 'text-red-600');
+                return; // Stop execution if input is invalid
+            }
+
+            attempts++; // Increment the attempt counter
+            attemptsDisplay.textContent = `Attempts: ${attempts}`; // Update attempts display
+
+            // Compare the user's guess with the secret number
+            if (userGuess === secretNumber) {
+                showMessage(`🎉 Congratulations! You guessed the number ${secretNumber} in ${attempts} attempts!`, 'text-green-600');
+                guessInput.disabled = true; // Disable input after correct guess
+                guessButton.disabled = true; // Disable button after correct guess
+            } else if (userGuess < secretNumber) {
+                showMessage('Too low! Try a higher number.', 'text-orange-600');
+            } else {
+                showMessage('Too high! Try a lower number.', 'text-orange-600');
+            }
+
+            guessInput.value = ''; // Clear input field after each guess
+            guessInput.focus(); // Keep focus on the input field
+        }
+
+        // Event Listeners
+        guessButton.addEventListener('click', handleGuess); // Listen for clicks on the Guess button
+
+        // Allow pressing Enter key to submit guess
+        guessInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission behavior
+                handleGuess();
+            }
+        });
+
+        resetButton.addEventListener('click', initializeGame); // Listen for clicks on the Reset button
+
+        // Initialize the game when the page loads
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
+
 
